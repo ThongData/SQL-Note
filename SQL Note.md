@@ -748,6 +748,175 @@ WHERE EXISTS
 		WHERE BusinessEntityID = MyPeople.BusinessEntityID); -- Better to use JOIN or WHERE EXISTS
 
 ````
+
+**Examples of Subquery** 
+A subquery is a select query within another query.
+  - **Question: Find (SQL MOSH Databases) the products where the unit price is greater than the product Lettuce with id = 3**
+    ```sql
+    SELECT *
+    FROM products
+    WHERE unit_price > (SELECT unit_price
+                        FROM products
+                        WHERE product_id = 3)
+    ```
+    
+**USING IN OPERATOR TO WRITE SUBQUERIES** 
+  - **Question: In sql_hr database, find employees who earn more than average**
+    ```sql
+    SELECT *
+    FROM employees
+    WHERE salary > (SELECT AVG(salary)
+                    FROM employees)
+    ORDER BY employee_id
+    ```
+   - USING IN OPERATOR TO WRITE SUBQUERIES
+
+  - **Ques: Find the products that have never been ordered**
+
+    ```sql
+    SELECT *
+    FROM products
+    WHERE product_id NOT IN (SELECT DISTINCT product_id
+                            FROM order_items)
+    ```
+
+  - **Ques: Find clients without invoices**
+
+    ```sql
+    SELECT *
+    FROM clients
+    WHERE client_id NOT IN (SELECT DISTINCT client_id
+                            FROM invoices)
+    ```
+- SUBQUERIES vs JOINS
+
+  - Quite often, we can write subqueries using JOIN clauses.
+  - **Ques: same as above**
+
+    ```sql
+    SELECT *
+    FROM clients c
+    LEFT JOIN invoices i USING (client_id)
+    WHERE i.invoice_id IS NULL
+    ```
+
+  - **Ques: Find customers who have ordered lettuce (id = 3), select customer_id, first_name, last_name**
+
+    ```sql
+    SELECT DISTINCT customer_id,
+                    first_name,
+                    last_name
+    FROM customers c
+            JOIN orders o USING (customer_id)
+            JOIN order_items oi USING (order_id)
+    WHERE oi.product_id = 3
+    ```
+
+- ALL Keyword:
+
+  - **Ques: Select invoices larger than all invoices of client 3**
+
+    ```sql
+    SELECT *
+    FROM invoices
+    WHERE invoice_total > (SELECT MAX(invoice_total)
+                          FROM invoices
+                          WHERE client_id = 3)
+
+    -- Above is equivalent to
+
+    SELECT *
+    FROM invoices
+    WHERE invoice_total > ALL (SELECT invoice_total
+                              FROM invoices
+                              WHERE client_id = 3)
+
+    ```
+
+- ANY/SOME Keyword
+
+  - **Ques: Select clients with at least two invoices**
+
+    ```sql
+    SELECT c.client_id,
+           c.name
+    FROM clients c
+    WHERE c.client_id IN (SELECT client_id
+                        FROM invoices
+                        GROUP BY client_id
+                        HAVING COUNT(*) >= 2)
+
+    -- Equivalent to
+
+    SELECT c.client_id,
+           c.name
+    FROM clients c
+    WHERE c.client_id = (ANY/SOME) (SELECT client_id
+                             FROM invoices
+                             GROUP BY client_id
+                             HAVING COUNT(*) >= 2)
+
+    -- Equivalent to
+
+    SELECT c.client_id,
+       c.name
+    FROM invoices i
+    JOIN clients c USING (client_id)
+    GROUP BY client_id
+    HAVING COUNT(*) >= 2
+    ```
+
+- CORRELATED Queries:
+
+  - **Ques: Select employees whose salary is above the average in their office**
+
+    ```sql
+    SELECT *
+    FROM employees e
+    WHERE salary > (SELECT AVG(salary)
+                    FROM employees
+                    WHERE office_id = e.office_id)
+
+    -- In the first run, the first employee is selected and then the subquery condition runs for it. The subquery condition is dependent upon the outer query using the WHERE clause. As such, it calculates the average salary of all employees where their office_id = outer employee's office_id. In short, it averages the salary office wise in each iteration, rather than just once that happens when there is no correlation.
+
+    -- This constant iterative execution causes the query to run slow sometimes depending upon the number of data records.
+
+    -- Still quite powerfull having lot of application in real world
+    ```
+
+  - **Ques: Get invoices that are larger than the client's average invoice amount**
+    ```sql
+    SELECT invoice_id,
+           invoice_total
+    FROM invoices i
+    WHERE invoice_total > (SELECT AVG(invoice_total)
+                          FROM invoices
+                          WHERE i.client_id = client_id)
+    ```
+
+- The EXISTS Operator
+
+  - When the IN operator subquery returns a large result set of values, it's better to use the EXISTS operator which doesn't return the result set.
+  - EXISTS works better in above case as its fast in comparison to IN Operator.
+
+    ```sql
+    SELECT *
+    FROM clients c
+    WHERE EXISTS(SELECT client_id
+                FROM invoices
+                WHERE c.client_id = client_id)
+
+    --
+
+    SELECT *
+    FROM products
+    WHERE NOT EXISTS(
+            SELECT product_id
+            FROM order_items
+            WHERE products.product_id = order_items.product_id
+        )
+    ```
+
 ## 📌 Section 12: Window Functions (First_Value, Last_value, Lead(), Lag(),Ranking, Rows between, Moving Average, Rollup, cube)
 
 Window functions are used by
