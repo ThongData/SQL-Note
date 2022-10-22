@@ -37,7 +37,7 @@ Click here to expand!
 
 ***
 
-## 📌 Order of Execution
+## 📌 Section 1: Order of Execution
 
 Sequence of how SQL runs the query:
 
@@ -51,7 +51,7 @@ Sequence of how SQL runs the query:
 8. ORDER BY - Orders the columns.
 9. OFFSET, LIMIT - Limits the results.
 
-## 📌 CRUD Operations
+## 📌Section 2: CRUD Operations
 
 - **CREATE** - Create databases, tables or views
 - **READ** - Read using SELECT clause
