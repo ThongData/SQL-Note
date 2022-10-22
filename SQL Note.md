@@ -657,9 +657,332 @@ JOIN Production.ProductReview AS r
 
 ***
 
-## 📌Section 10: Grouping records
+## 📌 Section 10: Create Temp Table
 
-### 10.1: GROUP BY and COUNT
+````sql
+DROP TABLE IF EXISTS clean_weight_logs;
+CREATE TEMP TABLE clean_weight_logs AS (
+SELECT *
+FROM health.user_logs
+WHERE measure = 'weight' 
+	AND measure_value > 0
+	AND measure_value < 201);
+````
+
+***
+
+## 📌 Section 11: Derived Tables & Complex Queries
+
+Derived Tables are temporary tables that are specified in the FROM clause. Types of derived tables are:
+- Common Table Expressions (CTE)
+- Subquery
+
+````sql
+SELECT *
+FROM Kidney AS a
+-- Create derived table: select age, max blood pressure from kidney grouped by age
+JOIN 
+	(SELECT 
+		Age, 
+		MAX(BloodPressure) as MaxBloodPressure
+     	FROM kidney
+     	GROUP BY Age) AS b
+	ON a.BloodPressure = b.MaxBloodPressure
+	AND a.Age = b.Age
+````
+
+### 11.1: Common Table Expressions (CTE)
+
+To create a CTE, use WITH keyword followed by the CTE name and query. The CTE will also include the definition of the table enclosed within the AS().
+
+### 11.2: Subquery
+
+**Subquery in SELECT**
+
+````sql
+SELECT 
+  BusinessEntityID, 
+  SalesYTD, 
+	  (SELECT MAX(SalesYTD) 
+	  FROM Sales.SalesPerson) AS HighestSalesYTD,
+	  (SELECT MAX(SalesYTD) 
+	  FROM Sales.SalesPerson) - SalesYTD AS SalesGap
+FROM Sales.SalesPerson
+ORDER BY SalesYTD DESC
+````
+
+**Subquery in HAVING**
+
+````sql
+SELECT 
+  SalesOrderID, 
+  SUM(LineTotal) AS OrderTotal
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+HAVING SUM(LineTotal) > 
+	(
+	SELECT 
+    AVG(ResultTable.MyValues) AS AvgValue -- subsquery no. 2. Cannot combine both subqueries as cannot do AVG(SUM(LineTotal))
+	FROM
+		(SELECT SUM(LineTotal) AS MyValues --subquery no. 1
+		FROM Sales.SalesOrderDetail
+		GROUP BY SalesOrderID) AS ResultTable
+	);
+````
+
+**Correlated Subquery**
+
+````sql
+SELECT 
+  BusinessEntityID, 
+  FirstName, 
+  LastName,
+	  (SELECT 
+      JobTitle
+	  FROM HumanResources.Employee
+	  WHERE BusinessEntityID = MyPeople.BusinessEntityID) AS JobTitle --Better to use LEFT JOIN as give same results
+FROM Person.Person AS MyPeople
+WHERE EXISTS 
+  (SELECT JobTitle
+		FROM HumanResources.Employee
+		WHERE BusinessEntityID = MyPeople.BusinessEntityID); -- Better to use JOIN or WHERE EXISTS
+
+````
+## 📌 Section 12: Window Functions (First_Value, Last_value, Lead(), Lag(),Ranking, Rows between, Moving Average, Rollup, cube)
+
+Window functions are used by
+- Creating window with `OVER` clause
+- `PARTITION BY` to create the frame. If do not include PARTITION BY, the frame is created for entire table.
+- ORDER BY to arrange the results
+
+### 12.1: FIRST_VALUE() and LAST_VALUE() 
+
+- `FIRST_VALUE()` - returns first value in the window
+- `LAST_VALUE()` - returns last value in the window
+- `ORDER BY` is compulsory as it has to determine the first or last value.
+
+````sql
+SELECT 
+  TerritoryName, OrderDate, 
+  FIRST_VALUE(OrderDate) -- Select the first value in each partition
+    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS FirstOrder  -- Create the partitions and arrange the rows
+FROM Orders;
+````
+
+### 12.2: LEAD() and LAG()
+
+- `LEAD()` - returns value in the next row
+- `LAG()` - returns value in the preceding row
+- `ORDER BY` is compulsory as it has to determine the next or preceding value.
+
+````sql
+SELECT 
+  TerritoryName, OrderDate, 
+  LAG(OrderDate) -- Specify the previous OrderDate in the window
+    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS PreviousOrder, -- Over the window, partition by territory & order by order date
+  LEAD(OrderDate) -- Specify the next OrderDate in the window
+    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS NextOrder -- Create the partitions and arrange the rows
+FROM Orders;
+````
+
+### 12.3: Ranking
+
+- `ROW_NUMBER()` - Assigns unique numbers. Sequence is incremented by n + 1. For example, 1, 2, 3, 4, 5
+- `RANK()` - Assigns same number to rows with identical sequence, skipping over the next sequence. For example, 1, 2, 2, 4, 5
+- `DENSE_RANK()` - Assigns same number to rows with identical sequence, but does not skip over the next sequence. For example, 1, 2, 2, 3, 4
+
+````sql
+SELECT 
+  TerritoryName, OrderDate, 
+  ROW_NUMBER() 
+    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS OrderCount
+FROM Orders;
+````
+
+### 12.4: FIRST_VALUE() and LAST_VALUE() 
+
+- `FIRST_VALUE()` - returns first value in the window
+- `LAST_VALUE()` - returns last value in the window
+
+Uses RANGE BETWEEN 
+
+- PRECEDING
+- FOLLOWIING
+- UNBOUNDED PRECEDING
+- UNBOUNDED FOLLOWING
+- CURRENT ROW
+
+````sql
+SELECT
+  Year,
+  City,
+  -- Get the last city in which the Olympic games were held
+  LAST_VALUE(city) OVER (ORDER BY year ASC
+   RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS Last_City
+FROM Hosts
+ORDER BY Year ASC;
+````
+
+### 12.5: ROWS BETWEEN
+
+Eg
+- ROWS BETWEEN 3 PRECEDING AND CURRENT ROW - Frame starts 3 rows before current row and ends at current row
+- ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING - Frame starts 1 row before current row and ends 1 row after current row
+- ROWS BETWEEN 5 PRECEDING AND 1 FOLLOWING - Frame starts 5 row before current row and ends 1 row after current row
+
+**Difference between ROWS BETWEEN and RANGE BETWEEN**
+- RANGE treats duplicates as single entity, similar to RANK() where it treats duplicate values in rows as single entity.
+- Always use ROWS BETWEEN.
+
+### 12.6: Paging
+
+Split data into equal chunks.
+
+- NTILE(n) OVER (ORDER BY col_name) - Splits data into x approximately equal pages, or quartiles (similar to Bin in Tableau)
+
+````sql
+SELECT
+  --- Split up the distinct events into 111 unique groups
+  event,
+  NTILE(111) OVER (ORDER BY event ASC) AS Page
+FROM Events
+ORDER BY Event ASC;
+````
+
+### 12.7: Mathematical Aggregations
+
+Can use mathematical aggregations such as `MIN()`, `MAX()`, `SUM()`, `AVG()` and `COUNT()` in Windows function.
+
+````sql
+SELECT
+  SalesPerson, SalesYear, CurrentQuota,
+  SUM(CurrentQuota) 
+    OVER (PARTITION BY SalesYear) AS YearlyTotal,
+FROM SaleGoal;
+````
+
+````sql
+-- How to create a Running Total?
+SELECT 
+  TerritoryName, OrderDate, 
+  SUM(OrderPrice)
+       OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS TerritoryTotal -- MUST HAVE ORDER BY clause  
+FROM Orders;
+````
+
+````sql
+SELECT
+  year,
+  medals,
+  MIN(medals) OVER (ORDER BY year ASC) AS Min_Medals
+FROM France_Medals
+ORDER BY Year ASC;
+````
+
+### 12.8:  Moving Average and Totals
+
+Moving average (MA) - Average of last n periods. Use to indicate momentum/trends and eliminate seasonality.
+Moving total - Sum of last n periods. Use to indicate performance.
+
+````sql
+--- Calculate the 3-year moving average of medals earned
+SELECT
+  Year, Medals,
+  AVG(medals) OVER
+    (ORDER BY Year ASC
+     ROWS BETWEEN
+     2 preceding AND current row) AS Medals_MA
+FROM Russian_Medals
+ORDER BY Year ASC;
+````
+
+````sql
+-- Calculate each country's 3-game moving total
+SELECT
+  Year, Country, Medals,
+  sum(Medals) OVER
+    (PARTITION BY country
+     ORDER BY Year ASC
+     ROWS BETWEEN
+     2 preceding AND current row) AS Medals_MA
+FROM Country_Medals
+ORDER BY Country ASC, Year ASC;
+````
+
+### 12.9: ROLLUP and CUBE
+
+To calculate group-level and grand totals.
+ROLLUP is a GROUP BY subclause that includes extra rows for group-level aggregations by hierachical.
+
+CUBE works similarly to ROLLUP, but generates all possible group-level aggregations by non-hierachical.
+
+The grand total rows are placed with 'null' values.
+
+Country-level subtotals
+````sql
+-- Count the gold medals per country and gender
+SELECT
+  country,
+  gender,
+  COUNT(*) AS Gold_Awards
+FROM Summer_Medals
+WHERE
+  Year = 2004
+  AND Medal = 'Gold'
+  AND Country IN ('DEN', 'NOR', 'SWE')
+-- Generate Country-level subtotals
+GROUP BY country, ROLLUP(gender)
+ORDER BY Country ASC, Gender ASC;
+````
+
+All group-level subtotals
+````sql
+-- Count the medals per country and medal type
+SELECT
+  gender,
+  medal,
+  COUNT(*) AS Awards
+FROM Summer_Medals
+WHERE
+  Year = 2012
+  AND Country = 'RUS'
+GROUP BY CUBE(gender, medal) -- Get all possible group-level subtotals
+ORDER BY Gender ASC, Medal ASC;
+````
+
+### 12.10: Statistics
+
+- `STDEV()` - Calculate standard deviation to understand statistical distribution of numeric columns
+- `MODE` - Values that appear the most in table
+
+````sql
+SELECT
+  SalesPerson, SalesYear, CurrentQuota,
+  STDEV(CurrentQuota) 
+    OVER (PARTITION BY SalesYear ORDER BY SalesYear) AS StdDev,
+FROM SaleGoal;
+````
+  
+````sql
+-- To find mode of CurrentQuota
+WITH quota_count AS (
+  SELECT
+    SalesPerson, SalesYear, CurrentQuota,
+    ROW_NUMBER() -- To find the no. of times the same CurrentQuotavalue appears in the table
+      OVER (PARTITION BY CurrentQuota ORDER BY CurrentQuota) AS QuotaList
+  FROM SaleGoal)
+  
+SELECT 
+  CurrentQuota, QuotaList as Mode
+FROM quota_count
+WHERE QuotaList IN (SELECT MAX(QuotaList) -- Filter to find the maximum value only
+                    FROM quota_count);
+````
+***
+
+## 📌Section 13: Grouping records
+
+### 13.1: GROUP BY and COUNT
 
 Every column in `GROUP BY` clause needs to be in `SELECT` clause.
 
@@ -673,7 +996,7 @@ GROUP BY City, StateProvinceID
 ORDER BY AddressCount DESC;
 ````
 
-### 10.2: GROUP BY and HAVING
+### 13.2: GROUP BY and HAVING
 
 `HAVING` must be used in conjuction with `GROUP BY`.
 
@@ -689,9 +1012,9 @@ HAVING City = 'New York'
 
 ***
 
-## 📌 Section 11: Functions ( Aggregate, String, Date)
+## 📌 Section 14: Functions ( Aggregate, String, Date)
 
-### 11.1: Aggregate Functions
+### 14.1: Aggregate Functions
 
 | Aggregate Functions     | Description                 |
 | ----------------------- | --------------------------- |
@@ -702,7 +1025,7 @@ HAVING City = 'New York'
 | STDEV, VAR, VARP()      | Self-explanatory            |
 
 
-### 11.2: String/ Character Functions
+### 14.2: String/ Character Functions
 
 | String Functions  | Description                 | Syntax | 
 | ----------------- | --------------------------- | ------- |
@@ -785,7 +1108,7 @@ FROM customer;
 ```
 
 
-### 11.3: Mathematical Functions
+### 14.3: Mathematical Functions
 
 | Mathematical Functions  | Description        | Syntax |
 | ----------------- | ------------------------ | ------ |
@@ -830,7 +1153,7 @@ SELECT
 FROM Shipments;
 ````
 
-### 11.4: Date Functions
+### 14.4: Date Functions
 
 ### MS SQL Server
 
@@ -1012,13 +1335,13 @@ WHERE r.rental_date BETWEEN CAST('2005-05-01' AS DATE) -- Use an INTERVAL for th
 
 ***
 
-## 📌Section 12: Formatting Functions (Cast, Convert)
+## 📌Section 14: Formatting Functions (Cast, Convert)
 
-### 12.1: CAST()
+### 14.1: CAST()
 - Convert one date type to another data type, including date types.
 - Used in SQL Server, PostgreSQL, MySQL.
 
-### 12.2: CONVERT()
+### 14.2: CONVERT()
 - Convert one date type to another data type, including date types.
 - Used in SQL Server only.
 
@@ -1029,7 +1352,7 @@ CONVERT(NVARCHAR(30, date_col, 101) as US_mmddyyyy,
 CONVERT(NVARCHAR(30, date_col, 120) as yyyymmdd_time
 ````
 
-### 12.3: FORMAT()
+### 14.3: FORMAT()
 - Used in SQL Server only.
 
 ````sql
@@ -1038,242 +1361,9 @@ FORMAT(date_col, 'yyyy-MM-dd')
 
 ***
 
-## 📌 Section 13: Window Functions (First_Value, Last_value, Lead(), Lag(),Ranking, Rows between, Moving Average, Rollup, cube)
+## 📌 Section 15: Condition statement
 
-Window functions are used by
-- Creating window with `OVER` clause
-- `PARTITION BY` to create the frame. If do not include PARTITION BY, the frame is created for entire table.
-- ORDER BY to arrange the results
-
-### 13.1: FIRST_VALUE() and LAST_VALUE() 
-
-- `FIRST_VALUE()` - returns first value in the window
-- `LAST_VALUE()` - returns last value in the window
-- `ORDER BY` is compulsory as it has to determine the first or last value.
-
-````sql
-SELECT 
-  TerritoryName, OrderDate, 
-  FIRST_VALUE(OrderDate) -- Select the first value in each partition
-    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS FirstOrder  -- Create the partitions and arrange the rows
-FROM Orders;
-````
-
-### 13.2: LEAD() and LAG()
-
-- `LEAD()` - returns value in the next row
-- `LAG()` - returns value in the preceding row
-- `ORDER BY` is compulsory as it has to determine the next or preceding value.
-
-````sql
-SELECT 
-  TerritoryName, OrderDate, 
-  LAG(OrderDate) -- Specify the previous OrderDate in the window
-    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS PreviousOrder, -- Over the window, partition by territory & order by order date
-  LEAD(OrderDate) -- Specify the next OrderDate in the window
-    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS NextOrder -- Create the partitions and arrange the rows
-FROM Orders;
-````
-
-### 13.3: Ranking
-
-- `ROW_NUMBER()` - Assigns unique numbers. Sequence is incremented by n + 1. For example, 1, 2, 3, 4, 5
-- `RANK()` - Assigns same number to rows with identical sequence, skipping over the next sequence. For example, 1, 2, 2, 4, 5
-- `DENSE_RANK()` - Assigns same number to rows with identical sequence, but does not skip over the next sequence. For example, 1, 2, 2, 3, 4
-
-````sql
-SELECT 
-  TerritoryName, OrderDate, 
-  ROW_NUMBER() 
-    OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS OrderCount
-FROM Orders;
-````
-
-### 13.4: FIRST_VALUE() and LAST_VALUE() 
-
-- `FIRST_VALUE()` - returns first value in the window
-- `LAST_VALUE()` - returns last value in the window
-
-Uses RANGE BETWEEN 
-
-- PRECEDING
-- FOLLOWIING
-- UNBOUNDED PRECEDING
-- UNBOUNDED FOLLOWING
-- CURRENT ROW
-
-````sql
-SELECT
-  Year,
-  City,
-  -- Get the last city in which the Olympic games were held
-  LAST_VALUE(city) OVER (ORDER BY year ASC
-   RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS Last_City
-FROM Hosts
-ORDER BY Year ASC;
-````
-
-### 13.5: ROWS BETWEEN
-
-Eg
-- ROWS BETWEEN 3 PRECEDING AND CURRENT ROW - Frame starts 3 rows before current row and ends at current row
-- ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING - Frame starts 1 row before current row and ends 1 row after current row
-- ROWS BETWEEN 5 PRECEDING AND 1 FOLLOWING - Frame starts 5 row before current row and ends 1 row after current row
-
-**Difference between ROWS BETWEEN and RANGE BETWEEN**
-- RANGE treats duplicates as single entity, similar to RANK() where it treats duplicate values in rows as single entity.
-- Always use ROWS BETWEEN.
-
-### 13.6: Paging
-
-Split data into equal chunks.
-
-- NTILE(n) OVER (ORDER BY col_name) - Splits data into x approximately equal pages, or quartiles (similar to Bin in Tableau)
-
-````sql
-SELECT
-  --- Split up the distinct events into 111 unique groups
-  event,
-  NTILE(111) OVER (ORDER BY event ASC) AS Page
-FROM Events
-ORDER BY Event ASC;
-````
-
-### 13.7: Mathematical Aggregations
-
-Can use mathematical aggregations such as `MIN()`, `MAX()`, `SUM()`, `AVG()` and `COUNT()` in Windows function.
-
-````sql
-SELECT
-  SalesPerson, SalesYear, CurrentQuota,
-  SUM(CurrentQuota) 
-    OVER (PARTITION BY SalesYear) AS YearlyTotal,
-FROM SaleGoal;
-````
-
-````sql
--- How to create a Running Total?
-SELECT 
-  TerritoryName, OrderDate, 
-  SUM(OrderPrice)
-       OVER(PARTITION BY TerritoryName ORDER BY OrderDate) AS TerritoryTotal -- MUST HAVE ORDER BY clause  
-FROM Orders;
-````
-
-````sql
-SELECT
-  year,
-  medals,
-  MIN(medals) OVER (ORDER BY year ASC) AS Min_Medals
-FROM France_Medals
-ORDER BY Year ASC;
-````
-
-### 13.8:  Moving Average and Totals
-
-Moving average (MA) - Average of last n periods. Use to indicate momentum/trends and eliminate seasonality.
-Moving total - Sum of last n periods. Use to indicate performance.
-
-````sql
---- Calculate the 3-year moving average of medals earned
-SELECT
-  Year, Medals,
-  AVG(medals) OVER
-    (ORDER BY Year ASC
-     ROWS BETWEEN
-     2 preceding AND current row) AS Medals_MA
-FROM Russian_Medals
-ORDER BY Year ASC;
-````
-
-````sql
--- Calculate each country's 3-game moving total
-SELECT
-  Year, Country, Medals,
-  sum(Medals) OVER
-    (PARTITION BY country
-     ORDER BY Year ASC
-     ROWS BETWEEN
-     2 preceding AND current row) AS Medals_MA
-FROM Country_Medals
-ORDER BY Country ASC, Year ASC;
-````
-
-### 13.9: ROLLUP and CUBE
-
-To calculate group-level and grand totals.
-ROLLUP is a GROUP BY subclause that includes extra rows for group-level aggregations by hierachical.
-
-CUBE works similarly to ROLLUP, but generates all possible group-level aggregations by non-hierachical.
-
-The grand total rows are placed with 'null' values.
-
-Country-level subtotals
-````sql
--- Count the gold medals per country and gender
-SELECT
-  country,
-  gender,
-  COUNT(*) AS Gold_Awards
-FROM Summer_Medals
-WHERE
-  Year = 2004
-  AND Medal = 'Gold'
-  AND Country IN ('DEN', 'NOR', 'SWE')
--- Generate Country-level subtotals
-GROUP BY country, ROLLUP(gender)
-ORDER BY Country ASC, Gender ASC;
-````
-
-All group-level subtotals
-````sql
--- Count the medals per country and medal type
-SELECT
-  gender,
-  medal,
-  COUNT(*) AS Awards
-FROM Summer_Medals
-WHERE
-  Year = 2012
-  AND Country = 'RUS'
-GROUP BY CUBE(gender, medal) -- Get all possible group-level subtotals
-ORDER BY Gender ASC, Medal ASC;
-````
-
-### 13.10: Statistics
-
-- `STDEV()` - Calculate standard deviation to understand statistical distribution of numeric columns
-- `MODE` - Values that appear the most in table
-
-````sql
-SELECT
-  SalesPerson, SalesYear, CurrentQuota,
-  STDEV(CurrentQuota) 
-    OVER (PARTITION BY SalesYear ORDER BY SalesYear) AS StdDev,
-FROM SaleGoal;
-````
-  
-````sql
--- To find mode of CurrentQuota
-WITH quota_count AS (
-  SELECT
-    SalesPerson, SalesYear, CurrentQuota,
-    ROW_NUMBER() -- To find the no. of times the same CurrentQuotavalue appears in the table
-      OVER (PARTITION BY CurrentQuota ORDER BY CurrentQuota) AS QuotaList
-  FROM SaleGoal)
-  
-SELECT 
-  CurrentQuota, QuotaList as Mode
-FROM quota_count
-WHERE QuotaList IN (SELECT MAX(QuotaList) -- Filter to find the maximum value only
-                    FROM quota_count);
-````
-
-***
-
-## 📌 Section 14: Condition statement
-
-### 14.1: IF 
+### 15.1: IF 
 
 ````sql
 SELECT 
@@ -1283,7 +1373,7 @@ FROM Sales.SalesPerson
 GROUP BY IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal');
 ````
 
-### 14.2: If Else
+### 15.2: If Else
 
 ### CASE Statement
 
@@ -1300,99 +1390,6 @@ SELECT
   ELSE 5
   END AS SecondGroup   
 FROM Incidents;
-
-````
-***
-
-## 📌 14.3: Create Temp Table
-
-````sql
-DROP TABLE IF EXISTS clean_weight_logs;
-CREATE TEMP TABLE clean_weight_logs AS (
-SELECT *
-FROM health.user_logs
-WHERE measure = 'weight' 
-	AND measure_value > 0
-	AND measure_value < 201);
-````
-
-***
-
-## 📌 14.4: Derived Tables
-
-Derived Tables are temporary tables that are specified in the FROM clause. Types of derived tables are:
-- Common Table Expressions (CTE)
-- Subquery
-
-````sql
-SELECT *
-FROM Kidney AS a
--- Create derived table: select age, max blood pressure from kidney grouped by age
-JOIN 
-	(SELECT 
-		Age, 
-		MAX(BloodPressure) as MaxBloodPressure
-     	FROM kidney
-     	GROUP BY Age) AS b
-	ON a.BloodPressure = b.MaxBloodPressure
-	AND a.Age = b.Age
-````
-
-### 14.5: Common Table Expressions (CTE)
-
-To create a CTE, use WITH keyword followed by the CTE name and query. The CTE will also include the definition of the table enclosed within the AS().
-
-### 14.6: Subquery
-
-**Subquery in SELECT**
-
-````sql
-SELECT 
-  BusinessEntityID, 
-  SalesYTD, 
-	  (SELECT MAX(SalesYTD) 
-	  FROM Sales.SalesPerson) AS HighestSalesYTD,
-	  (SELECT MAX(SalesYTD) 
-	  FROM Sales.SalesPerson) - SalesYTD AS SalesGap
-FROM Sales.SalesPerson
-ORDER BY SalesYTD DESC
-````
-
-**Subquery in HAVING**
-
-````sql
-SELECT 
-  SalesOrderID, 
-  SUM(LineTotal) AS OrderTotal
-FROM Sales.SalesOrderDetail
-GROUP BY SalesOrderID
-HAVING SUM(LineTotal) > 
-	(
-	SELECT 
-    AVG(ResultTable.MyValues) AS AvgValue -- subsquery no. 2. Cannot combine both subqueries as cannot do AVG(SUM(LineTotal))
-	FROM
-		(SELECT SUM(LineTotal) AS MyValues --subquery no. 1
-		FROM Sales.SalesOrderDetail
-		GROUP BY SalesOrderID) AS ResultTable
-	);
-````
-
-**Correlated Subquery**
-
-````sql
-SELECT 
-  BusinessEntityID, 
-  FirstName, 
-  LastName,
-	  (SELECT 
-      JobTitle
-	  FROM HumanResources.Employee
-	  WHERE BusinessEntityID = MyPeople.BusinessEntityID) AS JobTitle --Better to use LEFT JOIN as give same results
-FROM Person.Person AS MyPeople
-WHERE EXISTS 
-  (SELECT JobTitle
-		FROM HumanResources.Employee
-		WHERE BusinessEntityID = MyPeople.BusinessEntityID); -- Better to use JOIN or WHERE EXISTS
 
 ````
 
