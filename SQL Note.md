@@ -755,7 +755,7 @@ A subquery is a select query within another query.
                     FROM employees)
     ORDER BY employee_id
     ```
-  - **Question: In sql_hr database, find employees who earn the highest salary in each department**
+  - **Question: In sql_hr database, find employees who earn the highest salary in each department- Multiple column, multiple row subquery - **
     ```sql
     SELECT 
     *
@@ -764,7 +764,7 @@ A subquery is a select query within another query.
     				from employee 
 				group by dept_name);
     ```   
-  - **Question: In sql_hr database, find department who do not have any employees**
+  - **Question: In sql_hr database, find department who do not have any employees - Single Column , Multiple row subquery-**
     ```sql
     SELECT 
     *
@@ -885,15 +885,14 @@ A subquery is a select query within another query.
 
     -- Still quite powerfull having lot of application in real world
     ```
-
-  - **Ques: Get invoices that are larger than the client's average invoice amount**
+    
+  - **Ques: find the employees in each department who earn more than the average salary in that department**
     ```sql
-    SELECT invoice_id,
-           invoice_total
-    FROM invoices i
-    WHERE invoice_total > (SELECT AVG(invoice_total)
-                          FROM invoices
-                          WHERE i.client_id = client_id)
+    SELECT *
+    FROM employee e1 e2
+    WHERE salary > (SELECT AVG(salary)
+                          FROM employee
+                          WHERE e2.dept_name = e1.dept_name)
     ```
 **The EXISTS Operator**
 
