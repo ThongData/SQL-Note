@@ -110,9 +110,9 @@ WHERE customer_id = 1005;
 
 ***
 
-## 📌 Relational Database
+## 📌 Section 3: Relational Database
 
-### Alter Table
+### 3.1: Alter Table
 
 ````sql
 -- ADD new column
@@ -160,7 +160,7 @@ ALTER TABLE table_name
 RENAME COLUMN old_column TO new_column;
 ````
 
-### Remove Table
+### 3.2: Remove Table
 
 Use `TRUNCATE TABLE` to remove data from table with table structure still existing in the database.
 
@@ -174,7 +174,7 @@ Use `DROP TABLE` to delete the entire table including data from the database.
 DROP TABLE rooms;
 ````
 
-### Insert Records
+### 3.3: Insert Records
 
 ````sql
 - Using results from query to insert into table
@@ -198,7 +198,7 @@ INSERT INTO rooms (room_no, bed_type, rate)
 
 ***
 
-## 📌 Date Types
+## 📌 Section 4: Date Types
 
 ### ADD_MONTHS
 
@@ -206,7 +206,7 @@ https://stackoverflow.com/questions/28635226/adding-months-to-date-postgresql-vs
 
 ***
 
-## 📌 Table Constraints
+## 📌 Section 5 : Table Constraints
 
 Constraints give the data structure and help with consistency and data quality.
 
@@ -224,7 +224,7 @@ ALTER TABLE professors
 ADD COLUMN id serial -- Add auto-incremental function to id column
 ````
 
-### Primary Key
+### 5.1: Primary Key
 
 ````sql
 -- Set primary key using CONCAT
@@ -250,7 +250,7 @@ ALTER TABLE guests
 ADD CONSTRAINT first_name_unq UNIQUE (first_name); -- 'first_name-unq' represents name of the constraint
 ````
 
-### Foreign Key
+### 5.2: Foreign Key
 
 ````sql
 ALTER TABLE a
@@ -291,7 +291,7 @@ WHERE affiliations.firstname = professors.firstname
 	AND affiliations.lastname = professors.lastname;
 ````
 
-### NULL Values
+### 5.3: NULL Values
 
 Take note that we cannot use `!=` or `<>` on NULL values.
 
@@ -365,7 +365,7 @@ ORDER BY Country ASC, Gender ASC;
 
 ***
 
-## 📌 Index
+## 📌 Section 6: Index
 
 Index improves the speed of looking through the table's data. Without an index, SQL performs a table scan by searching for every record in the table. 
 
@@ -377,7 +377,7 @@ It acts as 'Table of Content' in a book - it's (usually) much faster to look up 
 
 ***
 
-## 📌 Data Types
+## 📌 Section 7 : Data Types
 
 - text - character strings of any length
 - varchar(x) - a maximum of 'x' characters
@@ -387,7 +387,7 @@ It acts as 'Table of Content' in a book - it's (usually) much faster to look up 
 - numeric - float, decimal
 - integer - whole numbers
 
-### Use CAST
+### 7.1: Use CAST
 
 ````sql
 SELECT 
@@ -402,7 +402,7 @@ SELECT
 FROM transactions;
 ````
 
-### Use CONVERT 
+### 7.2: Use CONVERT 
 
 ````sql
 DECLARE
@@ -425,7 +425,7 @@ SELECT
 	CONVERT(NVARCHAR(30), @CubsWinWorldSeries, 101) AS US_mdyyyy;
 ````
 
-### Use FORMAT
+### 7.3: Use FORMAT
 
 ````sql
 -- To retrieve short dates using 'd' and long dates using 'D'
@@ -442,9 +442,9 @@ SELECT
 ````
 ***
 
-## 📌 Filtering Techniques
+## 📌 Section 8 : Filtering Techniques
 
-### Using WHERE
+### 8.1: Using WHERE
 
 ### Limit Results with TOP
 
@@ -482,7 +482,7 @@ FROM classroom
 ORDER BY score;
 ````
 
-### Remove duplicates with DISTINCT
+### 8.2: Remove duplicates with DISTINCT
 
 To remove duplicates and retrieve unique values only.
 
@@ -493,7 +493,7 @@ SELECT
 FROM Person.Address
 ORDER BY City;
 ````
-### Using ISNUMERIC()
+### 8.3: Using ISNUMERIC()
 
 To return values that are numeric only.
 
@@ -503,7 +503,7 @@ SELECT
 FROM School.Scores;
 ````
 
-### Comparison operators
+### 8.4: Comparison operators
 
 | Comparison Operator | Description |
 | ------------------- | ----------- |
@@ -519,7 +519,7 @@ FROM School.Scores;
 | IN (..., ..., ...)    |    |
 | NOT IN (..., ..., ...)  | |
 
-### Match texts using LIKE and Wildcards**
+### 8.5: Match texts using LIKE and Wildcards**
 
 ````sql
 WHERE first_name LIKE 'a%' -- Finds any values that starts with "a"
@@ -537,13 +537,13 @@ WHERE first_name LIKE 'a[c-e]__' -- Finds any values that starts with "a" and ha
 
 ***
 
-## 📌 JOINS
+## 📌 Section 9 : JOINS
 
 - `INNER JOIN`: Only returns matching rows.
 - `LEFT JOIN` (or `RIGHT JOIN`): All rows from main table + matches from joining table.
 - `NULL`: Displayed if no match is found in `LEFT JOIN` / `RIGHT JOIN`.
 
-### Inner Joins
+### 9.1: Inner Joins
 
 ````sql
 SELECT 
@@ -556,7 +556,7 @@ JOIN Person.PersonPhone AS pp
 	ON p.BusinessEntityID = pp.BusinessEntityID;
 ````  
 
-### Left Joins
+### 9.2: Left Joins
 
 ````sql
 SELECT 
@@ -570,7 +570,7 @@ LEFT JOIN HumanResources.Employee AS e
 	ON p.BusinessEntityID = e.BusinessEntityID;
 ````
 
-### Right Joins
+### 9.3: Right Joins
 
 ````sql
 SELECT 
@@ -584,7 +584,7 @@ RIGHT JOIN HumanResources.Employee AS e
 	ON p.BusinessEntityID = e.BusinessEntityID;
 ````
 
-### Cross Joins
+### 9.4: Cross Joins
 
 For example, table_1 has 10 rows and table_2 has 5 rows. A `CROSS JOIN` would result in 10 rows x 5 rows = 50 rows table.
 
@@ -596,7 +596,7 @@ FROM HumanResources.Department AS d
 CROSS JOIN Person.AddressType AS a;
 ````
 
-### Combine results with UNION
+### 9.5: Combine results with UNION
 
 `UNION` excludes duplicate rows in both set of queries whereas, `UNION ALL` includes any duplicate rows in the sets of queries.
 
@@ -613,7 +613,7 @@ SELECT ProductCategoryID, ProductSubCategoryID, Name
 FROM Production.ProductSubcategory;
 ````
 
-### Return distinct rows with EXCEPT
+### 9.6: Return distinct rows with EXCEPT
 
 ````sql
 SELECT BusinessEntityID
@@ -634,7 +634,7 @@ LEFT JOIN Sales.PersonCreditCard AS c --Same results using LEFT JOIN
 WHERE p.PersonType <> 'EM' AND c.CreditCardID IS NULL;
 ````
 
-### Return common rows with INTERSECT
+### 9.7: Return common rows with INTERSECT
 
 ````sql
 SELECT ProductID
