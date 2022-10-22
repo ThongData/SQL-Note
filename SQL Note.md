@@ -1,7 +1,5 @@
 # 📝 SQL 101 Guide
 
-## [UPDATE IN PROGRESS]
-
 ## 📚 Table of Content
 
 <details>
@@ -58,7 +56,7 @@ Sequence of how SQL runs the query:
 - **UPDATE** - Amend existing database records
 - **DELETE** - Delete records
 
-### Create Table
+###2.1: Create Table
 
 ````sql
 CREATE TABLE rooms (
@@ -77,7 +75,7 @@ CRREATE TABLE students (
   tuition_paid BOOLEAN);
 ````
 
-### Update Records
+###2.2: Update Records
 
 Before running `UPDATE` clause, run a `SELECT` query to identify the exact row(s) to update to ensure that we update correct rows.
 
@@ -101,7 +99,7 @@ SET title = "Toy Story 3",
 WHERE id = 11;
 ````
 
-### Delete Records
+###2.3: Delete Records
 
 Before running `DELETE` clause, run a `SELECT` query to identify the exact row(s) for deletion to ensure that we delete only the unwanted rows.
 
