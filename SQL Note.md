@@ -755,7 +755,23 @@ A subquery is a select query within another query.
                     FROM employees)
     ORDER BY employee_id
     ```
-    
+  - **Question: In sql_hr database, find employees who earn the highest salary in each department**
+    ```sql
+    SELECT 
+    *
+    FROM employees
+    WHERE (department, salary) in (select dept_name, max(salary) 
+    				from employee 
+				group by dept_name);
+    ```   
+  - **Question: In sql_hr database, find department who do not have any employees**
+    ```sql
+    SELECT 
+    *
+    FROM department
+    WHERE dept_name not in (select distinct dept_name 
+    				from employee);
+    ```   
 **Using IN operator to write subqueries** 
 
   - **Ques: Find the products that have never been ordered**
