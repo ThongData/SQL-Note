@@ -746,9 +746,7 @@ A subquery is a select query within another query.
                         FROM products
                         WHERE product_id = 3)
     ```
-    
-**Using IN operator to write subqueries** 
-
+   
   - **Question: In sql_hr database, find employees who earn more than average**
     ```sql
     SELECT *
@@ -757,6 +755,9 @@ A subquery is a select query within another query.
                     FROM employees)
     ORDER BY employee_id
     ```
+    
+**Using IN operator to write subqueries** 
+
    - USING IN OPERATOR TO WRITE SUBQUERIES
 
   - **Ques: Find the products that have never been ordered**
