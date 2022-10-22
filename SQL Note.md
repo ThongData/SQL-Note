@@ -677,20 +677,6 @@ Derived Tables are temporary tables that are specified in the FROM clause. Types
 - Common Table Expressions (CTE)
 - Subquery
 
-````sql
-SELECT *
-FROM Kidney AS a
--- Create derived table: select age, max blood pressure from kidney grouped by age
-JOIN 
-	(SELECT 
-		Age, 
-		MAX(BloodPressure) as MaxBloodPressure
-     	FROM kidney
-     	GROUP BY Age) AS b
-	ON a.BloodPressure = b.MaxBloodPressure
-	AND a.Age = b.Age
-````
-
 ### 11.1: Common Table Expressions (CTE)
 
 To create a CTE, use WITH keyword followed by the CTE name and query. The CTE will also include the definition of the table enclosed within the AS().
