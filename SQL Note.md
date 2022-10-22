@@ -749,7 +749,8 @@ WHERE EXISTS
 
 ````
 
-**Examples of Subquery** 
+**Examples of Subquery**
+
 A subquery is a select query within another query.
   - **Question: Find (SQL MOSH Databases) the products where the unit price is greater than the product Lettuce with id = 3**
     ```sql
@@ -760,7 +761,8 @@ A subquery is a select query within another query.
                         WHERE product_id = 3)
     ```
     
-**USING IN OPERATOR TO WRITE SUBQUERIES** 
+**Using IN operator to write subqueries** 
+
   - **Question: In sql_hr database, find employees who earn more than average**
     ```sql
     SELECT *
@@ -788,7 +790,8 @@ A subquery is a select query within another query.
     WHERE client_id NOT IN (SELECT DISTINCT client_id
                             FROM invoices)
     ```
-- SUBQUERIES vs JOINS
+    
+ **SUBQUERIES vs JOINS** 
 
   - Quite often, we can write subqueries using JOIN clauses.
   - **Ques: same as above**
@@ -812,8 +815,8 @@ A subquery is a select query within another query.
     WHERE oi.product_id = 3
     ```
 
-- ALL Keyword:
-
+ **ALL Keyword** 
+ 
   - **Ques: Select invoices larger than all invoices of client 3**
 
     ```sql
@@ -832,8 +835,7 @@ A subquery is a select query within another query.
                               WHERE client_id = 3)
 
     ```
-
-- ANY/SOME Keyword
+ **ANY/SOME Keyword** 
 
   - **Ques: Select clients with at least two invoices**
 
@@ -865,8 +867,7 @@ A subquery is a select query within another query.
     GROUP BY client_id
     HAVING COUNT(*) >= 2
     ```
-
-- CORRELATED Queries:
+**CORRELATED Queries**
 
   - **Ques: Select employees whose salary is above the average in their office**
 
@@ -893,8 +894,7 @@ A subquery is a select query within another query.
                           FROM invoices
                           WHERE i.client_id = client_id)
     ```
-
-- The EXISTS Operator
+**The EXISTS Operator**
 
   - When the IN operator subquery returns a large result set of values, it's better to use the EXISTS operator which doesn't return the result set.
   - EXISTS works better in above case as its fast in comparison to IN Operator.
@@ -916,6 +916,7 @@ A subquery is a select query within another query.
             WHERE products.product_id = order_items.product_id
         )
     ```
+***
 
 ## 📌 Section 12: Window Functions (First_Value, Last_value, Lead(), Lag(),Ranking, Rows between, Moving Average, Rollup, cube)
 
