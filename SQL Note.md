@@ -557,6 +557,8 @@ JOIN Person.PersonPhone AS pp
 ````  
 
 ### 9.2: Left Joins
+![Left join](https://user-images.githubusercontent.com/116416338/197342828-61315cb4-a910-421e-ab1e-e4efbe26fb4b.png)
+
 
 ````sql
 SELECT 
@@ -655,9 +657,9 @@ JOIN Production.ProductReview AS r
 
 ***
 
-## 📌 Grouping records
+## 📌Section 10: Grouping records
 
-### GROUP BY and COUNT
+### 10.1: GROUP BY and COUNT
 
 Every column in `GROUP BY` clause needs to be in `SELECT` clause.
 
@@ -671,7 +673,7 @@ GROUP BY City, StateProvinceID
 ORDER BY AddressCount DESC;
 ````
 
-### GROUP BY and HAVING
+### 10.2: GROUP BY and HAVING
 
 `HAVING` must be used in conjuction with `GROUP BY`.
 
@@ -687,9 +689,9 @@ HAVING City = 'New York'
 
 ***
 
-## 📌 Functions
+## 📌 Section 11: Functions
 
-### Aggregate Functions
+### 11.1: Aggregate Functions
 
 | Aggregate Functions     | Description                 |
 | ----------------------- | --------------------------- |
@@ -700,7 +702,7 @@ HAVING City = 'New York'
 | STDEV, VAR, VARP()      | Self-explanatory            |
 
 
-### String/ Character Functions
+### 11.2: String/ Character Functions
 
 | String Functions  | Description                 | Syntax | 
 | ----------------- | --------------------------- | ------- |
@@ -783,7 +785,7 @@ FROM customer;
 ```
 
 
-### Mathematical Functions
+### 11.3: Mathematical Functions
 
 | Mathematical Functions  | Description        | Syntax |
 | ----------------- | ------------------------ | ------ |
@@ -828,7 +830,7 @@ SELECT
 FROM Shipments;
 ````
 
-### Date Functions
+### 11.4: Date Functions
 
 ### MS SQL Server
 
@@ -1010,13 +1012,13 @@ WHERE r.rental_date BETWEEN CAST('2005-05-01' AS DATE) -- Use an INTERVAL for th
 
 ***
 
-## 📌 Formatting Functions
+## 📌Section 12: Formatting Functions
 
-### CAST()
+### 12.1: CAST()
 - Convert one date type to another data type, including date types.
 - Used in SQL Server, PostgreSQL, MySQL.
 
-### CONVERT()
+### 12.2: CONVERT()
 - Convert one date type to another data type, including date types.
 - Used in SQL Server only.
 
@@ -1027,7 +1029,7 @@ CONVERT(NVARCHAR(30, date_col, 101) as US_mmddyyyy,
 CONVERT(NVARCHAR(30, date_col, 120) as yyyymmdd_time
 ````
 
-### FORMAT()
+### 12.3: FORMAT()
 - Used in SQL Server only.
 
 ````sql
@@ -1036,14 +1038,14 @@ FORMAT(date_col, 'yyyy-MM-dd')
 
 ***
 
-## 📌 Window Functions
+## 📌 Section 13: Window Functions
 
 Window functions are used by
 - Creating window with `OVER` clause
 - `PARTITION BY` to create the frame. If do not include PARTITION BY, the frame is created for entire table.
 - ORDER BY to arrange the results
 
-### FIRST_VALUE() and LAST_VALUE() 
+### 13.1: FIRST_VALUE() and LAST_VALUE() 
 
 - `FIRST_VALUE()` - returns first value in the window
 - `LAST_VALUE()` - returns last value in the window
@@ -1057,7 +1059,7 @@ SELECT
 FROM Orders;
 ````
 
-### LEAD() and LAG()
+### 13.2: LEAD() and LAG()
 
 - `LEAD()` - returns value in the next row
 - `LAG()` - returns value in the preceding row
@@ -1073,7 +1075,7 @@ SELECT
 FROM Orders;
 ````
 
-### Ranking
+### 13.3: Ranking
 
 - `ROW_NUMBER()` - Assigns unique numbers. Sequence is incremented by n + 1. For example, 1, 2, 3, 4, 5
 - `RANK()` - Assigns same number to rows with identical sequence, skipping over the next sequence. For example, 1, 2, 2, 4, 5
@@ -1087,7 +1089,7 @@ SELECT
 FROM Orders;
 ````
 
-### FIRST_VALUE() and LAST_VALUE() 
+### 13.4: FIRST_VALUE() and LAST_VALUE() 
 
 - `FIRST_VALUE()` - returns first value in the window
 - `LAST_VALUE()` - returns last value in the window
@@ -1111,7 +1113,7 @@ FROM Hosts
 ORDER BY Year ASC;
 ````
 
-### ROWS BETWEEN
+### 13.5: ROWS BETWEEN
 
 Eg
 - ROWS BETWEEN 3 PRECEDING AND CURRENT ROW - Frame starts 3 rows before current row and ends at current row
@@ -1122,7 +1124,7 @@ Eg
 - RANGE treats duplicates as single entity, similar to RANK() where it treats duplicate values in rows as single entity.
 - Always use ROWS BETWEEN.
 
-### Paging
+### 13.6: Paging
 
 Split data into equal chunks.
 
@@ -1137,7 +1139,7 @@ FROM Events
 ORDER BY Event ASC;
 ````
 
-### Mathematical Aggregations
+### 13.7: Mathematical Aggregations
 
 Can use mathematical aggregations such as `MIN()`, `MAX()`, `SUM()`, `AVG()` and `COUNT()` in Windows function.
 
@@ -1167,7 +1169,7 @@ FROM France_Medals
 ORDER BY Year ASC;
 ````
 
-### Moving Average and Totals
+### 13.8:  Moving Average and Totals
 
 Moving average (MA) - Average of last n periods. Use to indicate momentum/trends and eliminate seasonality.
 Moving total - Sum of last n periods. Use to indicate performance.
@@ -1197,7 +1199,7 @@ FROM Country_Medals
 ORDER BY Country ASC, Year ASC;
 ````
 
-### ROLLUP and CUBE
+### 13.9: ROLLUP and CUBE
 
 To calculate group-level and grand totals.
 ROLLUP is a GROUP BY subclause that includes extra rows for group-level aggregations by hierachical.
@@ -1238,7 +1240,7 @@ GROUP BY CUBE(gender, medal) -- Get all possible group-level subtotals
 ORDER BY Gender ASC, Medal ASC;
 ````
 
-### Statistics
+### 13.10: Statistics
 
 - `STDEV()` - Calculate standard deviation to understand statistical distribution of numeric columns
 - `MODE` - Values that appear the most in table
@@ -1269,9 +1271,9 @@ WHERE QuotaList IN (SELECT MAX(QuotaList) -- Filter to find the maximum value on
 
 ***
 
-## 📌 Condition statement
+## 📌 Section 14: Condition statement
 
-### IIF 
+### 14.1: IF 
 
 ````sql
 SELECT 
@@ -1281,7 +1283,7 @@ FROM Sales.SalesPerson
 GROUP BY IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal');
 ````
 
-### If Else
+### 14.2: If Else
 
 ### CASE Statement
 
@@ -1302,7 +1304,7 @@ FROM Incidents;
 ````
 ***
 
-## 📌 Create Temp Table
+## 📌 14.3: Create Temp Table
 
 ````sql
 DROP TABLE IF EXISTS clean_weight_logs;
@@ -1316,7 +1318,7 @@ WHERE measure = 'weight'
 
 ***
 
-## 📌 Derived Tables
+## 📌 14.4: Derived Tables
 
 Derived Tables are temporary tables that are specified in the FROM clause. Types of derived tables are:
 - Common Table Expressions (CTE)
@@ -1336,11 +1338,11 @@ JOIN
 	AND a.Age = b.Age
 ````
 
-### Common Table Expressions (CTE)
+### 14.5: Common Table Expressions (CTE)
 
 To create a CTE, use WITH keyword followed by the CTE name and query. The CTE will also include the definition of the table enclosed within the AS().
 
-### Subquery
+### 14.6: Subquery
 
 **Subquery in SELECT**
 
