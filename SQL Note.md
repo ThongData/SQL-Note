@@ -758,8 +758,6 @@ A subquery is a select query within another query.
     
 **Using IN operator to write subqueries** 
 
-   - USING IN OPERATOR TO WRITE SUBQUERIES
-
   - **Ques: Find the products that have never been ordered**
 
     ```sql
