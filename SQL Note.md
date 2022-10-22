@@ -56,7 +56,7 @@ Sequence of how SQL runs the query:
 - **UPDATE** - Amend existing database records
 - **DELETE** - Delete records
 
-###2.1: Create Table
+### 2.1: Create Table
 
 ````sql
 CREATE TABLE rooms (
@@ -75,7 +75,7 @@ CRREATE TABLE students (
   tuition_paid BOOLEAN);
 ````
 
-###2.2: Update Records
+### 2.2: Update Records
 
 Before running `UPDATE` clause, run a `SELECT` query to identify the exact row(s) to update to ensure that we update correct rows.
 
@@ -99,7 +99,7 @@ SET title = "Toy Story 3",
 WHERE id = 11;
 ````
 
-###2.3: Delete Records
+### 2.3: Delete Records
 
 Before running `DELETE` clause, run a `SELECT` query to identify the exact row(s) for deletion to ensure that we delete only the unwanted rows.
 
