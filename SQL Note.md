@@ -689,7 +689,7 @@ HAVING City = 'New York'
 
 ***
 
-## 📌 Section 11: Functions
+## 📌 Section 11: Functions ( Aggregate, String, Date)
 
 ### 11.1: Aggregate Functions
 
@@ -1012,7 +1012,7 @@ WHERE r.rental_date BETWEEN CAST('2005-05-01' AS DATE) -- Use an INTERVAL for th
 
 ***
 
-## 📌Section 12: Formatting Functions
+## 📌Section 12: Formatting Functions (Cast, Convert)
 
 ### 12.1: CAST()
 - Convert one date type to another data type, including date types.
@@ -1038,7 +1038,7 @@ FORMAT(date_col, 'yyyy-MM-dd')
 
 ***
 
-## 📌 Section 13: Window Functions
+## 📌 Section 13: Window Functions (First_Value, Last_value, Lead(), Lag(),Ranking, Rows between, Moving Average, Rollup, cube)
 
 Window functions are used by
 - Creating window with `OVER` clause
