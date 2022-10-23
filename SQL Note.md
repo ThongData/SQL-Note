@@ -571,6 +571,8 @@ FROM Person.Person AS p
 LEFT JOIN HumanResources.Employee AS e
 	ON p.BusinessEntityID = e.BusinessEntityID;
 ````
+![Left outer join](https://user-images.githubusercontent.com/116416338/197391934-9f060fca-daf8-4622-adc2-9df8d5eb50b6.png)
+![Left Join special](https://user-images.githubusercontent.com/116416338/197391994-82bf806b-92ec-4cfa-8959-50cd1964e8f1.png)
 
 ### 9.3: Right Joins
 
