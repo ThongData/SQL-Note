@@ -1050,9 +1050,11 @@ Uses RANGE BETWEEN
 
 - PRECEDING
 - FOLLOWIING
-- UNBOUNDED PRECEDING
+- UNBOUNDED PRECEDING:  All rows before the current row
 - UNBOUNDED FOLLOWING
-- CURRENT ROW
+- CURRENT ROW: All rows after the current row
+
+![Range between](https://user-images.githubusercontent.com/116416338/197387388-2667fad1-bd5e-4079-b9bf-db8c2aee2a30.png)
 
 ````sql
 SELECT
