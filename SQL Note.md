@@ -205,6 +205,7 @@ INSERT INTO rooms (room_no, bed_type, rate)
 https://stackoverflow.com/questions/28635226/adding-months-to-date-postgresql-vs-oracle
 
 ***
+````sql
 -- Credit to http://www.dwhworld.com/2010/08/date-dimension-sql-scripts-mysql/
 -- Small-numbers table
 DROP TABLE IF EXISTS numbers_small;
@@ -260,7 +261,7 @@ week_of_year    = DATE_FORMAT( date, "%V" ),
 quarter         = QUARTER(date),
 previous_day    = DATE_ADD(date, INTERVAL -1 DAY),
 next_day        = DATE_ADD(date, INTERVAL 1 DAY);
-
+````
 ## 📌 Section 5 : Table Constraints
 
 Constraints give the data structure and help with consistency and data quality.
